@@ -28,6 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <link rel="icon" href="/favicon.ico" sizes="any" />
       <body className={classNames(openSans.className, 'bg-[#7f8c8d] dark:bg-[#2c3e50]')}>
           <HomeNav />
           {children}
