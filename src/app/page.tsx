@@ -1,113 +1,293 @@
-import Image from 'next/image'
+'use client'
+
+import AfterNameWinner from '@/components/AfterNameWinner';
+import ResultNameWinner from '@/components/ResultNameWinner';
+import Utils from '@/utils/utils';
+import { Button, Checkbox, Container, FormControl, FormControlLabel, FormGroup, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import styled from 'styled-components';
+import { range, without } from 'lodash'
+import SettingsIcon from "@mui/icons-material/Settings"
+import { useState } from 'react';
+
+const ButtonCustom = styled.p`
+  &:hover {
+    color: blue
+  }
+  cursor: pointer
+`
+const ClearResults = styled.h4`
+  &:hover {
+    color: blue
+  }
+  cursor: pointer
+`
 
 export default function Home() {
+  let listName: any | undefined;
+  const resultArr = (arr: any[]) => {
+    const res = arr.filter(val => {
+      if (val.includes('\n')) {
+        const con = val.split('\n')
+        Utils.uniqFast(con).forEach(val => {
+          arrE.push(val)
+        })
+      }
+      if (!val.includes('\n')) {
+        return !val.includes('\n')
+      }
+    })
+    return without(arrE.concat(res), '')
+  }
+
+  const splitBySpace = (arr: any[]) => {
+    const arrEmber: any[] = []
+    const res = arr.filter(val => {
+      if (val.includes(' ')) {
+        without(val.split(' '), '').forEach(val => {
+          arrEmber.push(val)
+        }) 
+      }
+      if (!val.includes(' ')) {
+        return !val.includes(' ')
+      }
+    })
+    return Utils.uniqFast(res.concat(arrEmber))
+  }
+
+  const arrE: any[] = []
+  const [numWinner, setNumWinner] = useState<number|string>(1)
+  const [customNumWinner, setCustomNumWinner] = useState<number>(1)
+  const [listWinner, setListWinner] = useState<any[]>([])
+  const [nameParticipants, setNameParticipants] = useState('')
+  const [stateOptions, setStateOptions] = useState({
+    remove_name: false,
+    same_names: false,
+    split_names: false,
+    filter_duplicate: true,
+    add_information: false
+  })
+
+  const {remove_name, same_names, split_names, filter_duplicate, add_information} = stateOptions
+
+  const handleDropDown = (event: any) => {
+    setNumWinner(event.target.value)
+  }
+
+  const handleCheckBox = (event: any) => {
+    setStateOptions({ ...stateOptions, [event.target.name]: event.target.checked})
+  }
+
+  const handleListName = (event: any) => {
+    setNameParticipants(event.target.value)
+  }
+
+  const handleCustomNumWinner = (event: any) => {
+    const val = event.target.value
+    if (Number(val) < 0) {
+      return
+    }
+    setCustomNumWinner(val)
+  }
+
+  if (filter_duplicate) {
+    if (nameParticipants.includes(',')) {
+      const abc = nameParticipants.split(',')
+      listName = Utils.uniqFast(resultArr(abc))
+    } else {
+      listName = Utils.uniqFast(without(nameParticipants.split('\n'), ''))
+    }
+  } else {
+    if (nameParticipants.includes(',')) {
+      const abc = nameParticipants.split(',')
+      listName = resultArr(abc)
+    } else {
+      listName = without(nameParticipants.split('\n'), '')
+    }
+  }
+
+  if (split_names) {
+    listName = splitBySpace(listName)
+  }
+
+  const resultNameWinner = (numNameWinner: number | string) => {
+    let arrEmpty: any[] = []
+    const oldLength = listName.length
+      for (;;) {
+        const rand = Utils.getRandomInt(1, listName.length) - 1
+        const result = listName[rand]
+        if (arrEmpty.length === numNameWinner) {
+          break
+        } else if (typeof numNameWinner === 'number' && same_names && numNameWinner > 1) {
+          // console.log('SAME NAMES WINNER')
+          arrEmpty.push(result)
+        } else {
+          // console.log('NOT SAME NAME')
+          arrEmpty.push(result)
+          arrEmpty = Utils.uniqFast(arrEmpty)
+        }
+    }
+    if (remove_name) {
+      listName = without(listName, ...arrEmpty)
+    }
+    if ((split_names && remove_name) || !split_names) {
+      setNameParticipants(listName.join('\n'))
+    }
+    setListWinner(val => val.concat({result: arrEmpty, length: oldLength, dateTime: Utils.dateTimeFormat()}))
+  }
+
+  const handleRandomName = () => {
+    if (numWinner === 'Custom') {
+      const val = Number(customNumWinner)
+      if (listName.length === 0 || listName.length < val || val === 0) {
+        return
+      } else {
+        resultNameWinner(val)
+      }
+    } else if (listName.length === 0 || listName.length < numWinner) {
+      return
+    } else {
+      resultNameWinner(numWinner)
+    }
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+    <div>
+      <Container component='div' maxWidth='lg' className='mt-[75px]'>
+        <Grid container>
+          <Grid container item lg={12} md={12} sm={12} xs={12}>
+            <TextField
+              label='List Names'
+              multiline
+              rows={9}
+              value={nameParticipants}
+              className='mt-[20px] text-white'
+              onChange={handleListName}
+              placeholder='Name 1, Name 2, Name 3, ...'
+              variant='outlined'
+              InputLabelProps={{style: { color: 'white' }}}
+              inputProps={{ style: { color: "white" } }}
+              fullWidth
             />
-          </a>
+            <div className='flex justify-end w-full'>
+              <p style={{fontStyle: 'italic'}}>Separate each name by comma or newline</p>
+            </div>
+            <div>
+              <p>Number of names: <span className='font-bold'>{listName.length}</span></p>
+            </div>
+            <div className='flex w-full mt-[20px]'>
+              <ButtonCustom className='z-10' onClick={() => setNameParticipants('')}><span className='[font-style:italic] pr-[5px]'>Remove all names from list</span> <span className='text-[blue]'>X</span></ButtonCustom>
+            </div>
+            <div className='flex w-full mt-[-25px]'>
+              {listWinner.length !== 0 &&
+                <ClearResults onClick={() => setListWinner([])} className='inline justify-end font-normal italic mt-[40px] mb-[10px]'>Clear results <span className='text-[blue]'>X</span></ClearResults>
+              }
+            </div>
+
+            {listWinner.length > 0 ?
+              listWinner.map((val, index) => {
+                return (
+                  <div key={index}>
+                    {index === 0 &&
+                      <div className='p-[10px] rounded-[20px] bg-[#bdc3c7] dark:bg-[#7f8c8d] mb-[20px]'>
+                        <ResultNameWinner listWinner={listWinner} index={index}/>
+                        <div className='flex flex-row justify-between'>
+                          <Typography display='inline' variant='h6' className='text-white mt-[10px]'>Total winners: {listWinner[listWinner.length-index-1].result.length}</Typography>
+                          <Typography display='inline' variant='h6' className='text-white mt-[10px]'>{listWinner[listWinner.length-index-1].dateTime}</Typography>
+                        </div>
+                      </div>
+                    }
+                    </div>
+                );
+              })
+              : <div/>
+            }
+
+            <div className='flex w-full text-[#e74c3c] items-center my-[20px]'>
+              <SettingsIcon className='text-[#2d3436] dark:text-customWhite'/>
+              <p className='pl-[10px] font-semibold text-[#2d3436] dark:text-customWhite'>Name Picker Options</p>
+            </div>
+            <FormControl variant='outlined' className='w-full'>
+              <InputLabel className='text-customWhite'>Number of names/winners</InputLabel>
+              <Select
+                defaultValue={numWinner}
+                label='Number of names/winners'
+                value={numWinner}
+                onChange={handleDropDown}
+                className='!text-[white]'
+              >
+                {range(5).concat(Utils.dropdownList).map((val, index) => {
+                  return (
+                    <MenuItem value={val < 5 ? val+1: val} key={index}>{val < 5 ? val+1: val}</MenuItem>
+                  )
+                })}
+              </Select>
+            </FormControl>
+            {numWinner === 'Custom' ?
+              <TextField
+                label='Custom Number'
+                type='number'
+                value={customNumWinner}
+                style={{marginTop: '20px'}}
+                onChange={handleCustomNumWinner}
+                placeholder='Number'
+                variant='outlined'
+                fullWidth
+              />
+              : <div/>
+            }
+            <FormControl component='fieldset'>
+              <FormGroup>
+                <FormControlLabel
+                  control={<Checkbox checked={remove_name} onChange={handleCheckBox} name='remove_name'/>}
+                  label='Remove name from list of names after drawing winner'/>
+                <FormControlLabel
+                  style={{cursor: typeof numWinner === 'number' && numWinner < 2 ? 'not-allowed' : 'pointer', color:  typeof numWinner === 'number' && numWinner < 2 ? '#ecf0f1' : ''}}
+                  control={
+                    typeof numWinner === 'number' && numWinner < 2 
+                    ? <Checkbox checked={same_names} name='same_names' className='cursor-not-allowed text-[#ecf0f1]'/>
+                    : <Checkbox checked={same_names} onChange={handleCheckBox} name='same_names'/>
+                  }
+                  label='Same name/winner possible in one draw (when using multiple winners)'/>
+                <FormControlLabel
+                  control={<Checkbox checked={split_names} onChange={handleCheckBox} name='split_names'/>}
+                  label='Split names by space'/>
+                <FormControlLabel
+                  control={<Checkbox checked={filter_duplicate} onChange={handleCheckBox} name='filter_duplicate'/>}
+                  label='Filter duplicate names'/>
+              </FormGroup>
+            </FormControl>
+            </Grid>
+            <Button            
+             className="my-5 text-white bg-[#d7d7d7] bg-[linear-gradient(147deg,#d7d7d7_0%,#353535_74%)] hover:bg-[#d3d3d3] hover:bg-[linear-gradient(315deg,#57606f_0%,#d3d3d3_95%)] focus:ring-4 focus:outline-none focus:ring-[#636e72] dark:focus:ring-[#b2bec3] font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-5" fullWidth onClick={listName.length > 1 ? handleRandomName : undefined}>Pick random name(s)</Button>
+        </Grid>
+      </Container>
+      <Container component='div' maxWidth='lg'>
+        <div className='flex flex-grow items-center flex-row justify-between'>
+          <Typography variant='h5'>Winners Name Picker</Typography>
+          {listWinner.length !== 0 &&
+            <ClearResults onClick={() => setListWinner([])} className='inline justify-end font-normal italic'>Clear results <span className='text-[blue]'>X</span></ClearResults>
+          }
         </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        {listWinner.length === 0 && <Typography className='my-5 italic font-bold' display='block' variant='body1'>Empty</Typography>}
+      </Container>
+      {listWinner.length > 0 &&
+        listWinner.map((val, index) => {
+          return (
+            <Container key={index}>
+              {index !== 0 ?
+                <div className='mb-[20px] p-[10px] [border-color:black] dark:[border-color:#b2bec3] [border-style:solid] rounded-[20px] [border-width:1px]'>
+                  <AfterNameWinner listWinner={listWinner} index={index}/>
+                  <div className='flex flex-row justify-between'>
+                    <Typography display='inline' variant='body1'>Total winners: {listWinner[listWinner.length-index-1].result.length}</Typography>
+                    <Typography display='inline' variant='body1'>{listWinner[listWinner.length-index-1].dateTime}</Typography>
+                  </div>
+                </div>
+              : <div/>
+              }
+            </Container>
+          )
+        })
+      }
+    </div>
   )
 }
