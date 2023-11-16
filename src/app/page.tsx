@@ -152,7 +152,7 @@ export default function Home() {
 
   return (
     <div>
-      <Container component='div' maxWidth='lg' className='mt-[75px]'>
+      <Container component='div' maxWidth='lg' className='!mt-[75px]'>
         <Grid container>
           <Grid container item lg={12} md={12} sm={12} xs={12}>
             <TextField
@@ -258,7 +258,7 @@ export default function Home() {
             </FormControl>
             </Grid>
             <Button            
-             className="my-5 text-white bg-[#d7d7d7] bg-[linear-gradient(147deg,#d7d7d7_0%,#353535_74%)] hover:bg-[#d3d3d3] hover:bg-[linear-gradient(315deg,#57606f_0%,#d3d3d3_95%)] focus:ring-4 focus:outline-none focus:ring-[#636e72] dark:focus:ring-[#b2bec3] font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-5" fullWidth onClick={listName.length > 1 ? handleRandomName : undefined}>Pick random name(s)</Button>
+             className="my-5 !text-white bg-[#d7d7d7] bg-[linear-gradient(147deg,#d7d7d7_0%,#353535_74%)] hover:bg-[#d3d3d3] hover:bg-[linear-gradient(315deg,#57606f_0%,#d3d3d3_95%)] focus:ring-4 focus:outline-none focus:ring-[#636e72] dark:focus:ring-[#b2bec3] font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-5" fullWidth onClick={listName.length > 1 ? handleRandomName : undefined}>Pick random name(s)</Button>
         </Grid>
       </Container>
       <Container component='div' maxWidth='lg'>
